@@ -1,17 +1,15 @@
 {
-  "name": "redux-logger",
+  "name": "@jarvisaoieong/redux-logger",
   "version": "2.4.0",
   "description": "Logger for redux",
   "main": "lib/index.js",
   "scripts": {
-    "lint": "$(npm bin)/eslint src",
-    "test": "npm run lint",
     "clean": "$(npm bin)/rimraf dist lib",
     "build:lib": "$(npm bin)/babel src --out-dir lib",
     "build:umd": "LIBRARY_NAME=reduxLogger NODE_ENV=development $(npm bin)/webpack src/index.js dist/index.js --config webpack.build.js",
     "build:umd:min": "LIBRARY_NAME=reduxLogger NODE_ENV=production $(npm bin)/webpack -p src/index.js dist/index.min.js --config webpack.build.js",
     "build": "npm run build:lib && npm run build:umd && npm run build:umd:min",
-    "prepublish": "npm run clean && npm run test && npm run build"
+    "prepublish": "npm run clean && npm run build"
   },
   "files": [
     "dist",

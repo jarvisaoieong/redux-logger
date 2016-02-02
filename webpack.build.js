@@ -1,4 +1,4 @@
-require(`babel-core/register`)();
-const config = require(`./webpack.config`);
+require('babel-core/register')();
+var config = require('./webpack.config');
 
 module.exports = config;

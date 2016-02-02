@@ -1,17 +1,17 @@
-import webpack from 'webpack';
-import path from 'path';
+var webpack = require('webpack');
+var path = require('path');
 
-export default {
+module.exports = {
   entry: [
-    path.join(__dirname, `src`, `index`),
+    path.join(__dirname, 'src', 'index'),
   ],
   output: {
     library: process.env.LIBRARY_NAME,
-    libraryTarget: `umd`,
+    libraryTarget: 'umd',
   },
   module: {
     loaders: [
-      { test: /\.js$/, exclude: /node_modules/, loaders: [`babel`] },
+      { test: /\.js$/, exclude: /node_modules/, loaders: ['babel'] },
     ],
   },
   plugins: [

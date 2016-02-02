@@ -57,7 +57,7 @@ function createLogger(options = {}) {
   const logBuffer = [];
   function printBuffer() {
     logBuffer.forEach((logEntry, key) => {
-      const { started, action, prevState, error } = logEntry;
+      const { started, action, prevState, error, originalActions } = logEntry;
       let { took, nextState } = logEntry;
       const nextEntry = logBuffer[key + 1];
       if (nextEntry) {
@@ -65,13 +65,16 @@ function createLogger(options = {}) {
         took = nextEntry.started - started;
       }
       // message
+      const isLoop = originalActions.length;
+      const originalActionType = originalActions.map((action) => action.type + ` > `).join(``);
+
       const formattedAction = actionTransformer(action);
       const time = new Date(started);
       const isCollapsed = (typeof collapsed === `function`) ? collapsed(() => nextState, action) : collapsed;
 
       const formattedTime = formatTime(time);
       const titleCSS = colors.title ? `color: ${colors.title(formattedAction)};` : null;
-      const title = `action ${formattedAction.type}${timestamp ? formattedTime : ``}${duration ? ` in ${took.toFixed(2)} ms` : ``}`;
+      const title = `${isLoop ? '⌛ ': ''}action ${isLoop ? originalActionType : ``}${formattedAction.type}${timestamp ? formattedTime : ``}${duration ? ` in ${took.toFixed(2)} ms` : ``}`;
 
       // render
       try {
@@ -88,6 +91,11 @@ function createLogger(options = {}) {
 
       if (colors.prevState) logger[level](`%c prev state`, `color: ${colors.prevState(prevState)}; font-weight: bold`, prevState);
       else logger[level](`prev state`, prevState);
+
+      if (isLoop) {
+         if (colors.action) logger[level](`%c original actions`, `color: ${colors.action(originalActions)}; font-weight: bold`, originalActions);
+        else logger[level](`action`, originalActions);
+      };
 
       if (colors.action) logger[level](`%c action`, `color: ${colors.action(formattedAction)}; font-weight: bold`, formattedAction);
       else logger[level](`action`, formattedAction);
@@ -109,10 +117,10 @@ function createLogger(options = {}) {
     logBuffer.length = 0;
   }
 
-  return ({ getState }) => (next) => (action) => {
+  return ({ getState }) => (next) => (action, originalActions = []) => {
     // exit early if predicate function returns false
     if (typeof predicate === `function` && !predicate(getState, action)) {
-      return next(action);
+      return next(action, originalActions);
     }
 
     const logEntry = {};
@@ -121,6 +129,7 @@ function createLogger(options = {}) {
     logEntry.started = timer.now();
     logEntry.prevState = stateTransformer(getState());
     logEntry.action = action;
+    logEntry.originalActions = originalActions;
 
     let returnedValue;
     if (logErrors) {
