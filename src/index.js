@@ -5,6 +5,14 @@ const formatTime = (time) => ` @ ${pad(time.getHours(), 2)}:${pad(time.getMinute
 // Use the new performance api to get better precision if available
 const timer = typeof performance !== `undefined` && typeof performance.now === `function` ? performance : Date;
 
+const renderActionType = (action) => {
+  let subActionType = '';
+  if (action.action) {
+    subActionType = ` > ${renderActionType(action.action)}`;
+  };
+  return `${action.type}${subActionType}`;
+}
+
 /**
  * Creates logger with followed options
  *
@@ -66,7 +74,9 @@ function createLogger(options = {}) {
       }
       // message
       const isLoop = originalActions.length;
-      const originalActionType = originalActions.map((action) => action.type + ` > `).join(``);
+      const originalActionType = originalActions.map((action) => 
+        `${renderActionType(action)} >> `
+      ).join(``);
 
       const formattedAction = actionTransformer(action);
       const time = new Date(started);
@@ -74,7 +84,7 @@ function createLogger(options = {}) {
 
       const formattedTime = formatTime(time);
       const titleCSS = colors.title ? `color: ${colors.title(formattedAction)};` : null;
-      const title = `${isLoop ? '⌛ ': ''}action ${isLoop ? originalActionType : ``}${formattedAction.type}${timestamp ? formattedTime : ``}${duration ? ` in ${took.toFixed(2)} ms` : ``}`;
+      const title = `${isLoop ? '⌛ ': ''}action ${isLoop ? originalActionType : ``}${renderActionType(formattedAction)}${timestamp ? formattedTime : ``}${duration ? ` in ${took.toFixed(2)} ms` : ``}`;
 
       // render
       try {
